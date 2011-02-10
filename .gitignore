@@ -1,0 +1,4 @@
+*.output
+*.out
+*.o
+*.d

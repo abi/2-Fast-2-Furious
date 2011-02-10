@@ -1,7 +1,4 @@
-#include <fstream> 
-#include <iostream>
-
-using namespace std;
+#include "stdio.h"
 
 /**
  * Given an input file (inputFile) and an integer array (out) of size 5, fills
@@ -18,11 +15,11 @@ using namespace std;
 void findSccs(char* inputFile, int out[5])
 {
     // TODO: Implement this function.
-    out[0] = 0;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
+    out[0] = 65;
+    out[1] = 65;
+    out[2] = 65;
+    out[3] = 65;
+    out[4] = 65;
 }
 
 /*
@@ -39,14 +36,19 @@ int main(int argc, char* argv[])
     int sccSizes[5];
     char* inputFile = argv[1];
     char* outputFile = argv[2];
-
-    findSccs(inputFile, sccSizes);
+    printf ("What up %s \n", inputFile);
+    findSccs (inputFile, sccSizes);
 	
     // Output the first 5 sccs into a file.
-    std::ofstream os;
-    os.open(outputFile);
-    os << sccSizes[0] << "\t" << sccSizes[1] << "\t" << sccSizes[2] << "\t" << sccSizes[3] << "\t" << sccSizes[4];
-    os.close();
+    int fd = creat (outputFile);
+    printf ("FD : %d\n", fd);
+    //TODO: This is really bad, probably have to use strcat
+    char output[11] = {(char) sccSizes[0], '\t', (char) sccSizes[1], '\t',
+                       (char) sccSizes[2], '\t', (char) sccSizes[3], '\t',
+                       (char) sccSizes[4], '\n', '\0'};
+    printf ("%s\n", output);
+    write (fd, output, sizeof (output));
+    close (fd);
     return 0;
 }
 
