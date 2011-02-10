@@ -1,5 +1,69 @@
-#include "stdio.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
+#define DEBUG 1
+
+/* Arbitarily large stack of integers. We don't check 
+   for stack overflows. Note: you can only use one stack at
+   a time. 
+   CONSIDER: Using a node pointer in the stack rather than
+   using node->id, then adding it to the base address and
+   dereferencing. */
+
+static int *sp = 0;
+
+static inline void
+stack_init (size_t size)
+{
+  sp = malloc (size * sizeof (int));
+}
+
+static inline void
+stack_push (int el)
+{
+  *sp = el;
+  sp++;
+}
+
+static inline int
+stack_pop (void)
+{
+  sp--;
+  return *sp;
+}
+
+static inline void
+stack_test (void)
+{
+  stack_init (10);
+  
+  stack_push (4);
+  stack_push (19);
+  stack_push (45);
+  
+  assert (stack_pop () == 45);
+  assert (stack_pop () == 19);
+  assert (stack_pop () == 4);
+}
+
+/* Test harness function
+   If we really want to be fast, we should call this in production */
+static void
+test (void)
+{
+  stack_test ();
+}
+
+
+typedef struct node
+  {
+    int id;
+    int index;
+    int low_link;
+    int stack;
+  } node;
+  
 /**
  * Given an input file (inputFile) and an integer array (out) of size 5, fills
  * the 5 largest SCC sizes into (out) in decreasing order. In the case where
@@ -33,20 +97,24 @@ void findSccs(char* inputFile, int out[5])
  */
 int main(int argc, char* argv[])
 {
+    if (DEBUG)
+      test ();
+  
     int sccSizes[5];
     char* inputFile = argv[1];
     char* outputFile = argv[2];
-    printf ("What up %s \n", inputFile);
+    //printf ("What up %s \n", inputFile);
     findSccs (inputFile, sccSizes);
-	
+    
+    
+    //printf ("Stack should have worked!\n");
+    
     // Output the first 5 sccs into a file.
     int fd = creat (outputFile);
-    printf ("FD : %d\n", fd);
     //TODO: This is really bad, probably have to use strcat
     char output[11] = {(char) sccSizes[0], '\t', (char) sccSizes[1], '\t',
                        (char) sccSizes[2], '\t', (char) sccSizes[3], '\t',
                        (char) sccSizes[4], '\n', '\0'};
-    printf ("%s\n", output);
     write (fd, output, sizeof (output));
     close (fd);
     return 0;
