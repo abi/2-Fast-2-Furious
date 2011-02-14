@@ -281,7 +281,9 @@ findSccs(char* inputFile, int out[5])
     //and save pointers to the edges in the node structs
     char *save_ptr;
     node *cur, *next;
-    edge *e;
+    edge e_struct;
+    edge *e = &e_struct;
+    
     int total_edges = 0;
     int *edge_arr_ptr;
     
