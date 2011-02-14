@@ -60,6 +60,10 @@ stack_test (void)
 /* Non-standard C Library functions.
    From K&R. TODO: Make GNU style */
 
+
+//TODO: Will we ever have a negative sign? If not, we can get rid of that part
+//from this function.
+
 void itoa(int n, char s[])
 {
      int i, sign;
@@ -73,7 +77,7 @@ void itoa(int n, char s[])
      if (sign < 0)
          s[i++] = '-';
      s[i] = '\0';
-     reverse(s);
+     reverse(s); //TODO: could inline
 }
  
 void reverse(char s[])
@@ -173,8 +177,6 @@ get_edge_test (void)
    TODO: Get rid of this
 */
 
-static int nodes_explored = 0; //TEMP
-
 static void
 findScc (node *v)
 {
@@ -185,7 +187,8 @@ findScc (node *v)
   stack_push (v->id);
   nodes_explored++;
   ///printf ("Node being explored : %d\n", v->id);
-
+  //printf ("Node being explored : %d\n", v->id);
+  
   edge e_struct;
   edge *e = &e_struct;
   node *w;
