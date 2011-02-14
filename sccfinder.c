@@ -184,7 +184,7 @@ findScc (node *v)
   v->stack = 1; /* TODO: Should merge this with push */
   stack_push (v->id);
   nodes_explored++;
-  //printf ("Node being explored : %d\n", v->id);
+  ///printf ("Node being explored : %d\n", v->id);
 
   edge e_struct;
   edge *e = &e_struct;
@@ -236,7 +236,7 @@ findScc (node *v)
  * there are fewer than 5 components, you should fill in 0 for the remaining
  * values in (out).
  */
-static inline void
+static void
 findSccs(char* inputFile, int out[5])
 {
     int i, n, m, fd;
@@ -273,6 +273,7 @@ findSccs(char* inputFile, int out[5])
       {
         node *nd = get_node (i);
         nd->id = i;
+        nd->index = 0;
       }
       
     for (i = 1; i <= n; i++)
