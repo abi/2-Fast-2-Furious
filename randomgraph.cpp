@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
     int start = getRand(nodes);
     int end = getRand(nodes);
 
+    if (start==end) continue; //no self loops
+
     if (find (adjList[start].begin(),
               adjList[start].end(), end) == adjList[start].end())
     {
