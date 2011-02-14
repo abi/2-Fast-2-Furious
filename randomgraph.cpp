@@ -35,6 +35,14 @@ int main(int argc, char *argv[])
 
   int i=0;
 
+  /*
+   * This has a pathological edge case when the input is of the form n,
+   * n*(n-1); that is, when the user asks it to make a complete (directed) 
+   * graph.
+   *
+   * In a case like that, this will take around O(n^2) to make the graph.
+   */
+
   while (i < edges)
   {
     int start = getRand(nodes);
@@ -51,12 +59,8 @@ int main(int argc, char *argv[])
   cout << nodes << endl << edges << endl << endl;
 
   for (i=0;i<adjList.size();i++)
-    {
-      for (int j=0;j<adjList[i].size();j++)
-        {
-          cout << i << " " << adjList[i][j];
-        }
-    }
+    for (int j=0;j<adjList[i].size();j++)
+      cout << i << " " << adjList[i][j] << endl;
 
   return 0;
 }
