@@ -59,8 +59,7 @@ stack_test (void)
 
 /* Non-standard C Library functions.
    From K&R. TODO: Make GNU style */
-
-
+//TODO: Get rid of these functions
 //TODO: Will we ever have a negative sign? If not, we can get rid of that part
 //from this function.
 
@@ -104,7 +103,7 @@ min (int a, int b)
    
 static int cur_index = 1; /* Index that's constantly increasing during DFS */
 static void *nodes; /* Pointer to chunk of memory that stores nodes */
-static char *edges; /* Pointer to chunk of memory that stores edges */
+static int *edges; /* Pointer to chunk of memory that stores edges */
 static int max_scc = 0;
 
 typedef struct node
@@ -113,9 +112,10 @@ typedef struct node
     int index;
     int low_link;
     int stack;
-    char *edges;
+    int *edges;
+    int num_edges;
   } node;
-  
+
 typedef struct edge
   {
     int src;
@@ -144,28 +144,18 @@ extract_num2 (char **strp, const char *delim)
 }
 
 static inline char *
-get_edge (node *n, char *save_ptr, edge *e)
-{  
-  
-  char *c, *ep;
-  
-  if (save_ptr == NULL)
-    { 
-      ep = edges;
-      char node_id[MAX_NODE_ID_DIGITS];
-      node_id[0] = '\n'; //And append a space to the end
-      itoa (n->id, &node_id[1]);
-      save_ptr = strstr (ep, node_id);
-      if (!save_ptr) return NULL;
-      save_ptr++; //Skip over the last '\n'
-    }
-    
+extract_edge (char *save_ptr, edge *e)
+{
   e->src = extract_num2 (&save_ptr, " ");
-  if (e->src != n->id) return NULL;   
   e->dest = extract_num2 (&save_ptr, "\n");
-  
-  return save_ptr; 
+  return save_ptr;
 }
+static inline int *
+get_edge (int edge_num)
+{
+  return (int*) edges + edge_num;
+}
+
 
 static inline void
 get_edge_test (void)
@@ -185,7 +175,7 @@ findScc (node *v)
   cur_index++;
   v->stack = 1; /* TODO: Should merge this with push */
   stack_push (v->id);
-  nodes_explored++;
+  //nodes_explored++;
   ///printf ("Node being explored : %d\n", v->id);
   //printf ("Node being explored : %d\n", v->id);
   
@@ -195,11 +185,15 @@ findScc (node *v)
   char *save_ptr;
   int children = 0;
   
-  for (save_ptr = get_edge (v, NULL, e); save_ptr != NULL;
-       save_ptr = get_edge (v, save_ptr, e))
+  int *edge_ptr;
+  int i;
+  
+  for (edge_ptr = v->edges, i = 0; i < v->num_edges;
+       edge_ptr++, i++)
     {
-      w = get_node (e->dest);
-      children++;
+      w = get_node (*edge_ptr);
+      //printf ("Dest : %d\n", w->id);
+      
       if (w->index == 0)
         {
           findScc (w);
@@ -251,8 +245,8 @@ findSccs(char* inputFile, int out[5])
     struct stat statbuf;
     fstat (fd, &statbuf);
     
-    edges = mmap (NULL, statbuf.st_size + 1, PROT_WRITE, MAP_PRIVATE, fd, 0);
-    if (edges == MAP_FAILED)
+    char *edges_raw = mmap (NULL, statbuf.st_size + 1, PROT_WRITE, MAP_PRIVATE, fd, 0);
+    if (edges_raw == MAP_FAILED)
       {
     	  close(fd);
     	  perror("Error mmapping the file");
@@ -260,25 +254,57 @@ findSccs(char* inputFile, int out[5])
       }
     
     //Because '\n' is our delimiters for lines with edge info
-    *(edges + statbuf.st_size) = '\n';
+    *(edges_raw + statbuf.st_size) = '\n';
     
-    n = extract_num2 (&edges, "\n");
+    n = extract_num2 (&edges_raw, "\n");
     printf ("Number of nodes: %d \n", n);
-    m = extract_num2 (&edges, "\n");
+    m = extract_num2 (&edges_raw, "\n");
     printf ("Number of edges: %d \n", m);
     
-    *(--edges) = '\n'; //Because later we look for the sequence '\n'ID
+    //TODO: Get rid of this
+    *(--edges_raw) = '\n'; //Because later we look for the sequence '\n'ID
         
     stack_init (n);
     nodes = malloc (sizeof (node) * n);
+    edges = malloc (sizeof (int) * m);
     
+    //Just to be safe, we initialize the nodes to be the right struct
     for (i = 1; i <= n; i++)
       {
         node *nd = get_node (i);
         nd->id = i;
         nd->index = 0;
+        nd->num_edges = 0;
       }
-      
+    
+    //Extract all the edges and put them in an array
+    //and save pointers to the edges in the node structs
+    char *save_ptr;
+    node *cur, *next;
+    edge *e;
+    int total_edges = 0;
+    int *edge_arr_ptr;
+    
+    for (save_ptr = extract_edge (edges_raw, e);
+         total_edges < m;
+         save_ptr = extract_edge (save_ptr, e))
+      {
+        next = get_node (e->src);
+        edge_arr_ptr = get_edge(total_edges);
+        *edge_arr_ptr = e->dest;
+        
+        if (cur->id != next->id)
+          {
+            next->edges = get_edge(total_edges);
+            //printf ("New src %d has edge pointer %p to dest %d\n", next->id, next->edges, *(next->edges));
+          }
+        
+        //printf ("Dest : %d\n", e->dest);
+        cur = next;
+        cur->num_edges++;
+        total_edges++;
+      }
+          
     for (i = 1; i <= n; i++)
       {
         node *nd = get_node (i);
