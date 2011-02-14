@@ -23,7 +23,7 @@ static int *sp = 0;
 static inline void
 stack_init (size_t size)
 {
-  sp = malloc (size * sizeof (int));
+  sp = malloc (size * sizeof (int)); //TODO: just use a huge stack array, faster
 }
 
 static inline void
