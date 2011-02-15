@@ -28,7 +28,7 @@ scc: scc.c
 	$(CC) $(CFLAGS) -g -o scc scc.c
 
 opt: sccfinder.c
-	$(CC) $(CFLAGS) -O3 -o sccfinder sccfinder.c
+	$(CC) $(CFLAGS) -O3 -o scc scc.c
 
 debug: sccfinder.c
 	$(CC) $(CFLAGS) -g -o sccfinder sccfinder.c
