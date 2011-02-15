@@ -21,7 +21,7 @@ random: randomgraph.cpp
 sccfinder: sccfinder.c
 	$(CC) $(CFLAGS) -o sccfinder sccfinder.c
 
-grant: sccfinder2.c
+sccfinder2: sccfinder2.c
 	$(CC) $(CFLAGS) -g -o sccfinder2 sccfinder2.c
 
 opt: sccfinder.c
@@ -31,4 +31,4 @@ debug: sccfinder.c
 	$(CC) $(CFLAGS) -g -o sccfinder sccfinder.c
 
 clean:
-	rm -f sccfinder random *.o *.out *.output sccfinder2 sccfinder2.*
+	rm -rf sccfinder random *.o *.out *.output sccfinder2 sccfinder2.dSYM
