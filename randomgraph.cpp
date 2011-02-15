@@ -11,7 +11,7 @@ using namespace std;
 
 int getRand(int max)
 {
-  return rand() % max;
+  return rand() % max + 1;
 }
 
 int main(int argc, char *argv[])
