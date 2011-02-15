@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <fcntl.h>
 
 //TODO: Bypass C library and do syscalls directly
 
@@ -241,7 +242,7 @@ findSccs(char *inputFile)
     //printf ("Filename : %s\n", inputFile);
     
     //mmap(2) the entire file
-    fd = open (inputFile);
+    fd = open (inputFile, O_RDONLY);
 		printf ("FD : %d\n", fd);
     struct stat statbuf;
     fstat (fd, &statbuf);
