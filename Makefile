@@ -1,3 +1,6 @@
+grant: sccfinder2.c
+	gcc -std=gnu99 -lrt -g -o sccfinder2 sccfinder2.c
+
 random: randomgraph.cpp
 	g++ -lrt -o random randomgraph.cpp
 
