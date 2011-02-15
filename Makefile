@@ -31,4 +31,4 @@ debug: sccfinder.c
 	$(CC) $(CFLAGS) -g -o sccfinder sccfinder.c
 
 clean:
-	rm -f sccfinder random *.o *.out *.output
+	rm -f sccfinder random *.o *.out *.output sccfinder2 sccfinder2.*
