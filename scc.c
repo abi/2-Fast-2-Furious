@@ -201,57 +201,40 @@ findSccs (char *input_file, int sizes[5])
   stack = malloc (sizeof(int) * (totalnodes));
   
   int start, end, i;
-	int num = 0;
-	
-	//buf_size
-
-	
-	//return;
-	
+	register int digit, num;
   int laststart = 0, nodes = 1, j = 0, k = 0;
 
   for (i = 0; i < totaledges; i++)
     {
-			//fscanf (file, "%d\n%d\n", &start, &end);
-		 	//scanf("%d\n%d\n", &start, &end);
 			k = 0;
 			num = 0;
 			
 			//Clean up this mess
 			while (k < 2)
 				{
-					for (; j < buf_size; j++){
-						//printf ("Str : %c ", buf[j]);
-						//&& buf[j] != '\n'
-						// && j != buf_size - 1
-						if (buf[j] != ' ')
+EXTRACT_CHAR:
+						digit = (int) buf[j];
+						//printf ("%d\n", digit);
+						
+						if (digit != 32)
 							{
-								//printf ("%c : %d\n", buf[i], (10 * ((int) buf[i] - 48)));
-								num = num * 10 + ((int) buf[j] - 48);
+								num = num * 10 + (digit - 48);
+								j++;
+								goto EXTRACT_CHAR;
 							}
 						else
 							{									
-
-									if (k != 0)
-										{
-											break;
-											break;
-										}
-									
+									if (k != 0) break;
 									start = num;
 									j++;
 									num = 0;
-									break;	
-
 							}
-					}
 					k++;
 				}
 				
-				end = num;
-				j += 2;
+			end = num;
+			j += 2;
 				
-			
 			//printf ("%d to %d\n", start, end);
       
 			if (start != laststart)
