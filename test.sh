@@ -18,7 +18,7 @@ function validate_results {
 
 rm sccfinder2
 
-make grant
+make sccfinder2
 check_error
 
 rm resultfile

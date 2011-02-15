@@ -1,8 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h> //Get rid of this
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #define MIN(x, y) x > y ? y : x
+
+//TODO: Get rid of specfic stack size
 
 int lowestIndex = 1;
 int *edges;
@@ -65,6 +72,23 @@ insert_into_best(int val)
         }
       else break;
     }
+}
+
+//TODO: This is temporary
+
+static inline int
+extract_num2 (char **strp, const char *delim)
+{
+  char *str = *strp;
+  char *word = strstr (str, delim);
+  if (word == NULL) return NULL;
+  int len = word - str;
+    
+  char dest_bf[len + 1];
+  strncpy (dest_bf, str, len);
+  dest_bf[len] = '\0';
+  *strp = (char *) word + 1; //Skip the delim character; TODO: Delim >1 chars
+  return atoi (dest_bf);
 }
 
 //#define RECURSIVE
@@ -146,32 +170,61 @@ RETURN:
 }
 
 static inline void
-findSccs (char *input, int sizes[5])
+findSccs (char *input_file, int sizes[5])
 {
-	FILE *file = fopen (input, "r");
-  //freopen(input, "r", stdin);
-  int totalnodes, totaledges;
-
-	//Let's try the setbuf trick
-	//Arbitary large number/file size thist time
-	char *buffer = malloc (6444768); 
-	setbuf (file, buffer);
-
- 	fscanf (file, "%d\n%d\n", &totalnodes, &totaledges);
-
+	struct stat statbuf;
+	
+	int fd = open (input_file, O_RDONLY);
+	fstat (fd, &statbuf);
+	
+	char *buf = malloc (statbuf.st_size);
+	char *start_ptr = buf;
+	
+	printf ("Buffer size: %d\n", statbuf.st_size);
+	read (fd, buf, statbuf.st_size);
+	
+  int totalnodes, totaledges; //TODO: Change to n, m
+	printf ("Buffer ptr: %p\n", buf);
+	totalnodes = extract_num2 (&buf, "\n");
+  totaledges = extract_num2 (&buf, "\n");
+  totaledges = extract_num2 (&buf, "\n");
+	printf ("Number of nodes: %d \n", totalnodes);
+  printf ("Number of edges: %d \n", totaledges);
+	printf ("Bytes read: %d in buffer ptr %c\n", buf - start_ptr, *buf);
+  
+	int buf_size = statbuf.st_size - (buf - start_ptr);
+	
   edges = malloc (sizeof(int) * totaledges);
   edgesStartAt = malloc (sizeof(int) * (totalnodes + 1));
   edgeData = calloc (sizeof(edgeData) * totalnodes, 1); //Initialize to 0.
   stack = malloc (sizeof(int) * (totalnodes));
   
-  int start, end;
+  int start, end, i;
+	int num = 0;
+	
+	//buf_size
+	for (i = 0; i < 100; i++){
+		if (buf[i] != ' ' && buf[i] != '\n')
+			{
+				//printf ("%c : %d\n", buf[i], (10 * ((int) buf[i] - 48)));
+				num = num * 10 + ((int) buf[i] - 48);
+			}
+		else
+			{
+				printf ("%d\n", num);
+				num = 0;
+			}
+	}
+	
+	return;
+	
   int laststart = 0, nodes = 1;
-  int i;
 
-  for (i=0;i<totaledges;i++)
+  for (i = 0; i < buf_size; i++)
     {
-			fscanf (file, "%d\n%d\n", &start, &end);
+			//fscanf (file, "%d\n%d\n", &start, &end);
 		 	//scanf("%d\n%d\n", &start, &end);
+
       
 			if (start != laststart)
         {
@@ -186,12 +239,13 @@ findSccs (char *input, int sizes[5])
       laststart = start;
     }
 
+	//What is this?
   for (int k=laststart+1;k<=totalnodes+1;k++)
     edgesStartAt[k] = i;
 
-  for (int i=0;i<totalnodes;i++){
+  //for (int i=0;i<totalnodes;i++){
     //printf("%d\n", edgesStartAt[i]);
-  }
+  //}
 
  /*
   * The data for node i starts at edges[edgesStartAt[i]] and ends at
@@ -222,14 +276,13 @@ main(int argc, char* argv[])
     return 0;
 
     // Output the first 5 sccs into a file.
-    int fd = creat (outputFile);
-    //TODO: This is really bad, probably have to use strcat
-    char output[11] = {(char) sccSizes[0], '\t', (char) sccSizes[1], '\t',
-                       (char) sccSizes[2], '\t', (char) sccSizes[3], '\t',
-                       (char) sccSizes[4], '\n', '\0'};
-    write (fd, output, sizeof (output));
-    close (fd);
+    // int fd = creat (outputFile);
+    //    //TODO: This is really bad, probably have to use strcat
+    //    char output[11] = {(char) sccSizes[0], '\t', (char) sccSizes[1], '\t',
+    //                       (char) sccSizes[2], '\t', (char) sccSizes[3], '\t',
+    //                       (char) sccSizes[4], '\n', '\0'};
+    //    write (fd, output, sizeof (output));
+    //    close (fd);
     
     return 0;
 }
-
