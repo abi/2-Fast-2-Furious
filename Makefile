@@ -1,6 +1,6 @@
 CC = gcc
 CPP = g++
-CFLAGS =
+CFLAGS = -std=gnu99
 LDFLAGS = 
 SOURCES = randomgraph.cpp sccfinder.c sccfinder2.c
 OBJECTS=$(SOURCES:.cpp=.o)
@@ -20,6 +20,9 @@ random: randomgraph.cpp
 
 sccfinder: sccfinder.c
 	$(CC) $(CFLAGS) -o sccfinder sccfinder.c
+
+grant: sccfinder2.c
+	$(CC) $(CFLAGS) -g -o sccfinder2 sccfinder2.c
 
 opt: sccfinder.c
 	$(CC) $(CFLAGS) -O3 -o sccfinder sccfinder.c
