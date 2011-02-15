@@ -57,12 +57,31 @@ stack_test (void)
 }
 
 
+/* Segfault handler */
+void
+sigsegenv()
+{
+	printf ("Abi caught the segmentation fault");
+}
+
 /* Non-standard C Library functions.
    From K&R. TODO: Make GNU style */
 //TODO: Get rid of these functions
 //TODO: Will we ever have a negative sign? If not, we can get rid of that part
 //from this function.
 
+void reverse(char s[])
+{
+    int i, j;
+    char c;
+
+    for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+		
 void itoa(int n, char s[])
 {
      int i, sign;
@@ -80,18 +99,6 @@ void itoa(int n, char s[])
      //printf ("%s\n", s);
 }
  
-void reverse(char s[])
-{
-    int i, j;
-    char c;
-
-    for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
-        c = s[i];
-        s[i] = s[j];
-        s[j] = c;
-    }
-}
-
 
 static inline int
 min (int a, int b)
@@ -124,12 +131,6 @@ typedef struct edge
     int dest;
   } edge;
   
-static inline node *
-get_node (int node_id)
-{
-  return (node *) nodes + (node_id - 1);
-}
-
 static inline int
 extract_num2 (char **strp, const char *delim)
 {
@@ -145,6 +146,12 @@ extract_num2 (char **strp, const char *delim)
   return atoi (dest_bf);
 }
 
+static inline node *
+get_node (int node_id)
+{
+  return (node *) nodes + (node_id - 1);
+}
+
 static inline char *
 extract_edge (char *save_ptr, edge *e)
 {
@@ -158,31 +165,20 @@ get_edge (int edge_num)
   return (int*) edges + edge_num;
 }
 
-
-static inline void
-get_edge_test (void)
-{
-}
-
-/* You have to be careful when you call this
-   It moves the global edges pointer
-   TODO: Get rid of this
-*/
-
 static void
 findScc (node *v)
 {
   v->index = cur_index;
   v->low_link = cur_index;
   cur_index++;
+	
   v->stack = 1; /* TODO: Should merge this with push */
   stack_push (v->id);
+	
   //nodes_explored++;
   ///printf ("Node being explored : %d\n", v->id);
   //printf ("Node being explored : %d\n", v->id);
-  
-  edge e_struct;
-  edge *e = &e_struct;
+	
   node *w;
   char *save_ptr;
   int children = 0;
@@ -220,12 +216,7 @@ findScc (node *v)
           scc_len++;
         }
       while (w != v);
-      
-      // if (scc_len > max_scc)
-      //   {
-      //     printf ("Max SCC of size: %d\n", scc_len);
-      //     max_scc = scc_len;
-      //   }
+			
       for (i = 0; i < 5; i++)
         {
           if (scc_len > max_sccs[i]){
@@ -247,10 +238,11 @@ findSccs(char *inputFile)
 {
     int i, n, m, fd;
     
-    printf ("Filename : %s\n", inputFile);
+    //printf ("Filename : %s\n", inputFile);
     
     //mmap(2) the entire file
     fd = open (inputFile);
+		printf ("FD : %d\n", fd);
     struct stat statbuf;
     fstat (fd, &statbuf);
     
@@ -258,17 +250,17 @@ findSccs(char *inputFile)
     if (edges_raw == MAP_FAILED)
       {
     	  close(fd);
-    	  perror("Error mmapping the file");
-    	  exit(EXIT_FAILURE);
+    	  perror ("Error mmapping the file");
+    	  exit (EXIT_FAILURE);
       }
     
     //Because '\n' is our delimiters for lines with edge info
     *(edges_raw + statbuf.st_size) = '\n';
     
     n = extract_num2 (&edges_raw, "\n");
-    printf ("Number of nodes: %d \n", n);
+    //printf ("Number of nodes: %d \n", n);
     m = extract_num2 (&edges_raw, "\n");
-    printf ("Number of edges: %d \n", m);
+    //printf ("Number of edges: %d \n", m);
     
     //TODO: Get rid of this
     //*(--edges_raw) = '\n'; //Because later we look for the sequence '\n'ID
@@ -339,7 +331,6 @@ static void
 run_unit_tests (void)
 {
   stack_test ();
-  get_edge_test ();
 }
 
 /*
@@ -355,7 +346,8 @@ int
 main(int argc, char *argv[])
 {
     run_unit_tests (); /* Get rid of this call for opt */
-  
+		signal (SIGSEGV, sigsegenv); /* */
+		
     char *input_file = argv[1];
     char *output_file = argv[2];
     
@@ -381,7 +373,7 @@ main(int argc, char *argv[])
       }
       strcat (output, "\t");
     }
-    printf ("%s\n", output);
+    //printf ("%s\n", output);
     write (fd, output, strlen (output));
     close (fd);
     

@@ -1,0 +1,2 @@
+./random 500000 1000000 input/hugegraph
+./sccfinder input/hugegraph network.output

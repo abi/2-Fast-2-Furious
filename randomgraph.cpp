@@ -8,13 +8,14 @@
 
 using namespace std;
 
-
-int getRand(int max)
+int
+getRand(int max)
 {
-  return rand() % max + 1;
+  return (rand() % max) + 1;
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
   srand (time (NULL));
 
@@ -31,7 +32,7 @@ int main(int argc, char *argv[])
   sscanf (argv[1], "%d", &nodes);
   sscanf (argv[2], "%d", &edges);
 
-  vector<vector<int> > adjList (nodes, vector<int> (0));
+  vector<vector<int> > adjList (nodes + 1, vector<int> (0));
 
   int i=0;
 
@@ -51,14 +52,17 @@ int main(int argc, char *argv[])
     if (start==end) continue; //no self loops
 
     if (find (adjList[start].begin(),
-              adjList[start].end(), end) == adjList[start].end())
+             adjList[start].end(), end) == adjList[start].end())
     {
       adjList[start].push_back(end);
       ++i;
     }
   }
+	
+	adjList[100].push_back (10);
+	
 
-  cout << nodes << endl << edges << endl << endl;
+  cout << nodes << endl << edges << endl;
 
   for (i=0;i<adjList.size();i++)
     for (int j=0;j<adjList[i].size();j++)
