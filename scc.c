@@ -15,6 +15,7 @@ int lowestIndex = 1;
 int *edges;
 int *edgesStartAt;
 
+//You've got to be kidding... Edges?! :P
 struct edgeData {
   int index;
   int lowlink;
@@ -184,13 +185,13 @@ findSccs (char *input_file, int sizes[5])
 	read (fd, buf, statbuf.st_size);
 	
   int totalnodes, totaledges; //TODO: Change to n, m
-	printf ("Buffer ptr: %p\n", buf);
+	//printf ("Buffer ptr: %p\n", buf);
 	totalnodes = extract_num2 (&buf, "\n");
-  totaledges = extract_num2 (&buf, "\n");
+	//printf ("Buffer ptr: %p\n", buf);
   totaledges = extract_num2 (&buf, "\n");
 	printf ("Number of nodes: %d \n", totalnodes);
   printf ("Number of edges: %d \n", totaledges);
-	printf ("Bytes read: %d in buffer ptr %c\n", buf - start_ptr, *buf);
+	//printf ("Bytes read: %d in buffer ptr %c\n", buf - start_ptr, *buf);
   
 	int buf_size = statbuf.st_size - (buf - start_ptr);
 	
@@ -203,28 +204,50 @@ findSccs (char *input_file, int sizes[5])
 	int num = 0;
 	
 	//buf_size
-	for (i = 0; i < 100; i++){
-		if (buf[i] != ' ' && buf[i] != '\n')
-			{
-				//printf ("%c : %d\n", buf[i], (10 * ((int) buf[i] - 48)));
-				num = num * 10 + ((int) buf[i] - 48);
-			}
-		else
-			{
-				printf ("%d\n", num);
-				num = 0;
-			}
-	}
-	
-	return;
-	
-  int laststart = 0, nodes = 1;
 
-  for (i = 0; i < buf_size; i++)
+	
+	//return;
+	
+  int laststart = 0, nodes = 1, j = 0, k = 0;
+
+  for (i = 0; i < totaledges; i++)
     {
 			//fscanf (file, "%d\n%d\n", &start, &end);
 		 	//scanf("%d\n%d\n", &start, &end);
-
+			k = 0;
+			//Clean up this mess
+			while (k < 2)
+				{
+					for (; j < buf_size; j++){
+						//printf ("Str : %c ", buf[j]);
+						if (buf[j] != ' ' && buf[j] != '\n' && j != buf_size - 1)
+							{
+								//printf ("%c : %d\n", buf[i], (10 * ((int) buf[i] - 48)));
+								num = num * 10 + ((int) buf[j] - 48);
+							}
+						else
+							{
+								//printf ("%d\n", num);
+								if (k == 0)
+									{
+										start = num;
+										j++;
+									}
+								else
+									{
+										end = num;
+										j++;
+										//j += 2;
+										//TODO: Our random graphs are a different font
+									}
+								num = 0;
+								break;
+							}
+					}
+					k++;
+				}
+			
+			//printf ("%d to %d\n", start, end);
       
 			if (start != laststart)
         {
