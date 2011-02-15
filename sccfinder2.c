@@ -67,10 +67,15 @@ insert_into_best(int val)
     }
 }
 
+#define RECURSIVE
+
+//#define ITERATIVE
 void
 strongconnect(int v)
 {
+#ifdef ITERATIVE
 START:
+#endif
 
   edgeData[v].index = lowestIndex;
   edgeData[v].lowlink = lowestIndex;
@@ -88,19 +93,29 @@ START:
       if (edgeData[w].index == 0)
         {
           //strongconnect(w);
+#ifdef ITERATIVE
           stackframes[stackposition].local1 = v;
           stackframes[stackposition].local2 = pos;
 
+          v = w; //call with (w)
+
           stackposition++;
           goto START; //HACKY HACKY HACKY HACKY HACKY
+#endif
 
+#ifdef RECURSIVE
+          strongconnect(w);
+#endif 
+
+#ifdef ITERATIVE
 RETURN:
           stackposition--;
           if (stackposition == -1) return;
 
-          v = stackframes[stackposition].local1;
+          v =   stackframes[stackposition].local1;
           pos = stackframes[stackposition].local2;
           w = edges[pos];
+#endif
 
           edgeData[v].lowlink = MIN(edgeData[v].lowlink, edgeData[w].lowlink);
         }
@@ -121,7 +136,9 @@ RETURN:
     insert_into_best(count);
   }
 
+#ifdef ITERATIVE
   goto RETURN;
+#endif
 }
 
 void findSccs (char *input, int sizes[5])
