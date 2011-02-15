@@ -67,9 +67,9 @@ insert_into_best(int val)
     }
 }
 
-#define RECURSIVE
+//#define RECURSIVE
 
-//#define ITERATIVE
+#define ITERATIVE
 void
 strongconnect(int v)
 {
@@ -89,6 +89,7 @@ START:
            pos++)
     {
       w = edges[pos];
+      //printf("%d is adj to %d.\n", v, w);
 
       if (edgeData[w].index == 0)
         {
@@ -110,7 +111,10 @@ START:
 #ifdef ITERATIVE
 RETURN:
           stackposition--;
-          if (stackposition == -1) return;
+          if (stackposition == -1) {
+            stackposition = 0;
+            return;
+          }
 
           v =   stackframes[stackposition].local1;
           pos = stackframes[stackposition].local2;
@@ -171,9 +175,11 @@ void findSccs (char *input, int sizes[5])
       edges[i] = end;
       laststart = start;
     }
-  edgesStartAt[totalnodes+1] = i;
 
-  for (int i=0;i<=totalnodes;i++){
+  for (int k=laststart+1;k<=totalnodes+1;k++)
+    edgesStartAt[k] = i;
+
+  for (int i=0;i<totalnodes;i++){
     //printf("%d\n", edgesStartAt[i]);
   }
 
