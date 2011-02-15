@@ -6,3 +6,7 @@ resultfile
 sccfinder
 random
 sccfinder2
+randinput
+sccfinder2.d*
+scc
+scc.d*
