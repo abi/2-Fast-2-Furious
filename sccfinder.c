@@ -1,5 +1,5 @@
 /* #define NDEBUG // Set this flag for no debug */
-#define MAX_NODE_ID_DIGITS 7
+#define MAX_OUTPUT_SIZE 50
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,6 +77,7 @@ void itoa(int n, char s[])
          s[i++] = '-';
      s[i] = '\0';
      reverse(s); //TODO: could inline
+     //printf ("%s\n", s);
 }
  
 void reverse(char s[])
@@ -105,6 +106,7 @@ static int cur_index = 1; /* Index that's constantly increasing during DFS */
 static void *nodes; /* Pointer to chunk of memory that stores nodes */
 static int *edges; /* Pointer to chunk of memory that stores edges */
 static int max_scc = 0;
+static int max_sccs[5];
 
 typedef struct node
   {
@@ -219,10 +221,17 @@ findScc (node *v)
         }
       while (w != v);
       
-      if (scc_len > max_scc)
+      // if (scc_len > max_scc)
+      //   {
+      //     printf ("Max SCC of size: %d\n", scc_len);
+      //     max_scc = scc_len;
+      //   }
+      for (i = 0; i < 5; i++)
         {
-          printf ("Max SCC of size: %d\n", scc_len);
-          max_scc = scc_len;
+          if (scc_len > max_sccs[i]){
+            max_sccs[i] = scc_len;
+            break;
+          }
         }
     }
 }
@@ -234,7 +243,7 @@ findScc (node *v)
  * values in (out).
  */
 static void
-findSccs(char* inputFile, int out[5])
+findSccs(char *inputFile)
 {
     int i, n, m, fd;
     
@@ -262,7 +271,7 @@ findSccs(char* inputFile, int out[5])
     printf ("Number of edges: %d \n", m);
     
     //TODO: Get rid of this
-    *(--edges_raw) = '\n'; //Because later we look for the sequence '\n'ID
+    //*(--edges_raw) = '\n'; //Because later we look for the sequence '\n'ID
         
     stack_init (n);
     nodes = malloc (sizeof (node) * n);
@@ -315,12 +324,9 @@ findSccs(char* inputFile, int out[5])
       }
       
     printf ("MAX : %d\n", max_scc);
-      
-    out[0] = 65;
-    out[1] = 65;
-    out[2] = 65;
-    out[3] = 65;
-    out[4] = 65;
+    
+    for (i = 4; i >= 0; i--)
+        printf ("%dth bigggest : %d\n", i, max_sccs[i]);
     
     //munmap
     //close
@@ -346,23 +352,37 @@ run_unit_tests (void)
  * It outputs in the correct format.
  */
 int
-main(int argc, char* argv[])
+main(int argc, char *argv[])
 {
     run_unit_tests (); /* Get rid of this call for opt */
   
-    int sccSizes[5];
-    char* inputFile = argv[1];
-    char* outputFile = argv[2];
+    char *input_file = argv[1];
+    char *output_file = argv[2];
     
-    findSccs (inputFile, sccSizes);
+    findSccs (input_file);
     
     // Output the first 5 sccs into a file.
-    int fd = creat (outputFile);
+    int fd = creat (output_file);
     //TODO: This is really bad, probably have to use strcat
-    char output[11] = {(char) sccSizes[0], '\t', (char) sccSizes[1], '\t',
-                       (char) sccSizes[2], '\t', (char) sccSizes[3], '\t',
-                       (char) sccSizes[4], '\n', '\0'};
-    write (fd, output, sizeof (output));
+    char output[MAX_OUTPUT_SIZE]; 
+    memset (output, 0, sizeof (output));
+    int i;
+    
+    for (i = 0; i < 5; i++){
+      char len[7];
+      //printf ("%s\n", output);
+      itoa (max_sccs[i], len);
+      strcat (output, len);
+      //printf ("%s\n", len);
+      
+      if (i == 4){
+        strcat (output, "\0");
+        break;
+      }
+      strcat (output, "\t");
+    }
+    printf ("%s\n", output);
+    write (fd, output, strlen (output));
     close (fd);
     
     return 0;
