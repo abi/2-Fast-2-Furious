@@ -7,7 +7,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 
 #TODO: What exactly these flags are supposed to do
 ifneq (Darwin, $(shell uname))
-	CFLAGS = -lrt
+	CFLAGS += -lrt
 endif
 
 #all : $(SOURCES) $(BINS)
