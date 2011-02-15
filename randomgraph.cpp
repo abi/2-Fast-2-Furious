@@ -58,15 +58,13 @@ main(int argc, char *argv[])
       ++i;
     }
   }
-	
-	adjList[100].push_back (10);
-	
+		
 
   cout << nodes << endl << edges << endl;
 
   for (i=0;i<adjList.size();i++)
     for (int j=0;j<adjList[i].size();j++)
-      cout << i << " " << adjList[i][j] << endl;
+      cout << i << " " << adjList[i][j] << " " << endl;
 
   return 0;
 }

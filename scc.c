@@ -215,37 +215,42 @@ findSccs (char *input_file, int sizes[5])
 			//fscanf (file, "%d\n%d\n", &start, &end);
 		 	//scanf("%d\n%d\n", &start, &end);
 			k = 0;
+			num = 0;
+			
 			//Clean up this mess
 			while (k < 2)
 				{
 					for (; j < buf_size; j++){
 						//printf ("Str : %c ", buf[j]);
-						if (buf[j] != ' ' && buf[j] != '\n' && j != buf_size - 1)
+						//&& buf[j] != '\n'
+						// && j != buf_size - 1
+						if (buf[j] != ' ')
 							{
 								//printf ("%c : %d\n", buf[i], (10 * ((int) buf[i] - 48)));
 								num = num * 10 + ((int) buf[j] - 48);
 							}
 						else
-							{
-								//printf ("%d\n", num);
-								if (k == 0)
-									{
-										start = num;
-										j++;
-									}
-								else
-									{
-										end = num;
-										j++;
-										//j += 2;
-										//TODO: Our random graphs are a different font
-									}
-								num = 0;
-								break;
+							{									
+
+									if (k != 0)
+										{
+											break;
+											break;
+										}
+									
+									start = num;
+									j++;
+									num = 0;
+									break;	
+
 							}
 					}
 					k++;
 				}
+				
+				end = num;
+				j += 2;
+				
 			
 			//printf ("%d to %d\n", start, end);
       
