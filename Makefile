@@ -40,4 +40,4 @@ debug: sccfinder.c
 	$(CC) $(CFLAGS) -g -o sccfinder sccfinder.c
 
 clean:
-	rm -rf sccfinder random *.o *.out *.output sccfinder2 sccfinder2.dSYM scc scc.dSYM
+	rm -rf sccfinder random *.o *.out *.output sccfinder2 sccfinder2.dSYM scc scc.dSYM dual-core

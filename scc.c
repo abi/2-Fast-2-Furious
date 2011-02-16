@@ -254,10 +254,6 @@ EXTRACT_CHAR:
   for (int k=laststart+1;k<=totalnodes+1;k++)
     edgesStartAt[k] = i;
 
-  //for (int i=0;i<totalnodes;i++){
-    //printf("%d\n", edgesStartAt[i]);
-  //}
-
  /*
   * The data for node i starts at edges[edgesStartAt[i]] and ends at
   * edges[edgesStartAt[i+1]].
