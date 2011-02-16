@@ -206,15 +206,15 @@ findSccs (char *input_file, int sizes[5])
 
   for (i = 0; i < totaledges; i++)
     {
-			k = 0;
-			num = 0;
-			
-			//Clean up this mess
+      k = 0;
+      num = 0;
+
+      //Clean up this mess
 			while (k < 2)
 				{
 EXTRACT_CHAR:
 						digit = (int) buf[j];
-						//printf ("%d\n", digit);
+						printf ("%d\n", digit);
 						
 						if (digit != 32)
 							{
