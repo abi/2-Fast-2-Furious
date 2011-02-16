@@ -1,4 +1,8 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <sched.h>
 
 #include <pthread.h>
 
@@ -13,7 +17,6 @@ void
 *thread(void *aux)
 {
   for (int i=0;i<BIGGG;i++);
-
   return NULL;
 }
 
@@ -27,9 +30,19 @@ void
 int main(int argc, char **argv)
 {
 #ifdef THREADED
-  v = 0;
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(0, &cpuset);
+
+  cpu_set_t cpuset1;
+  CPU_ZERO(&cpuset1);
+  CPU_SET(1, &cpuset1);
 
   pthread_t thr1, thr2;
+
+  pthread_setaffinity_np(thr1, sizeof(cpu_set_t), &cpuset);
+  pthread_setaffinity_np(thr1, sizeof(cpu_set_t), &cpuset1);
+
 
   if (pthread_create(&thr1, NULL, &thread, NULL))
   {
