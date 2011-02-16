@@ -8,9 +8,11 @@ function check_error {
     echo "PASSED"
 }
 
-make scc
-./random 10000 50000 tinybig
 rm a b
+
+make opt
+make random
+./random 10000 50000 tinybig
 python pythscc.py tinybig > a
 ./scc tinybig > b
 diff a b
