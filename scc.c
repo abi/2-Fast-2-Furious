@@ -181,7 +181,7 @@ findSccs (char *input_file, int sizes[5])
 	char *buf = malloc (statbuf.st_size);
 	char *start_ptr = buf;
 	
-	printf ("Buffer size: %d\n", statbuf.st_size);
+	//printf ("Buffer size: %d\n", statbuf.st_size);
 	read (fd, buf, statbuf.st_size);
 	
   int totalnodes, totaledges; //TODO: Change to n, m
@@ -189,8 +189,8 @@ findSccs (char *input_file, int sizes[5])
 	totalnodes = extract_num2 (&buf, "\n");
 	//printf ("Buffer ptr: %p\n", buf);
   totaledges = extract_num2 (&buf, "\n");
-	printf ("Number of nodes: %d \n", totalnodes);
-  printf ("Number of edges: %d \n", totaledges);
+	//printf ("Number of nodes: %d \n", totalnodes);
+  //printf ("Number of edges: %d \n", totaledges);
 	//printf ("Bytes read: %d in buffer ptr %c\n", buf - start_ptr, *buf);
   
 	int buf_size = statbuf.st_size - (buf - start_ptr);
@@ -223,7 +223,7 @@ EXTRACT_CHAR:
 								goto EXTRACT_CHAR;
 							}
 						else
-							{									
+							{
 									if (k != 0) break;
 									start = num;
 									j++;
@@ -280,10 +280,11 @@ main(int argc, char* argv[])
     
     findSccs (inputFile, sccSizes);
     
-    for (int i=4;i>=0;i--)
+    for (int i=4;i>=1;i--)
     {
       printf("%d\t", bestsofar[i]);
     }
+      printf("%d", bestsofar[0]); //TODO: are we supposed to have a newline?
     return 0;
 
     // Output the first 5 sccs into a file.
