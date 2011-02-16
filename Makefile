@@ -18,8 +18,14 @@ endif
 random: randomgraph.cpp
 	$(CPP) $(CFLAGS) -o random randomgraph.cpp
 
+boostscc: boostscc.cpp
+	$(CPP) $(CFLAGS) -o boost boostscc.cpp
+
 sccfinder: sccfinder.c
 	$(CC) $(CFLAGS) -o sccfinder sccfinder.c
+
+threads: threads.c
+	$(CC) $(CFLAGS) -o threads threads.c
 
 sccfinder2: sccfinder2.c
 	$(CC) $(CFLAGS) -g -o sccfinder2 sccfinder2.c
