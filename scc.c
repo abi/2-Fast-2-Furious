@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include <sched.h>
+
 #include <pthread.h>
 
 #define MIN(x, y) x > y ? y : x
@@ -304,8 +306,6 @@ load_file (char *input_file)
   CPU_ZERO   (&cpuset2);
   CPU_SET (1, &cpuset2);
 
-  pthread_setaffinity_np (thr1, sizeof (cpu_set_t), &cpuset1);
-  pthread_setaffinity_np (thr2, sizeof (cpu_set_t), &cpuset2);
 
   thread_data.thread_start[0] = buf;
   thread_data.thread_start[1] = buf + buf_size / 2;
@@ -326,6 +326,9 @@ load_file (char *input_file)
 
   pthread_create (&thr1, NULL, &thread, 0);
   pthread_create (&thr2, NULL, &thread, 1);
+
+  pthread_setaffinity_np (thr1, sizeof (cpu_set_t), &cpuset1);
+  pthread_setaffinity_np (thr2, sizeof (cpu_set_t), &cpuset2);
 
   pthread_join (thr1, NULL);
   pthread_join (thr2, NULL);
