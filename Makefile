@@ -7,7 +7,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 
 #TODO: What exactly these flags are supposed to do
 ifneq (Darwin, $(shell uname))
-	CFLAGS = -lrt
+	CFLAGS += -lrt
 endif
 
 #all : $(SOURCES) $(BINS)
@@ -22,7 +22,7 @@ sccfinder: sccfinder.c
 	$(CC) $(CFLAGS) -o sccfinder sccfinder.c
 
 grant: sccfinder2.c
-	$(CC) $(CFLAGS) -g -o sccfinder2 sccfinder2.c
+	$(CC) $(CFLAGS) -O3 -g -o sccfinder2 sccfinder2.c
 
 opt: sccfinder.c
 	$(CC) $(CFLAGS) -O3 -o sccfinder sccfinder.c
