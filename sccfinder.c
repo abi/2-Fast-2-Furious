@@ -346,7 +346,7 @@ int
 main(int argc, char *argv[])
 {
     run_unit_tests (); /* Get rid of this call for opt */
-		signal (SIGSEGV, sigsegenv); /* */
+		//signal (SIGSEGV, sigsegenv); /* */
 		
     char *input_file = argv[1];
     char *output_file = argv[2];
