@@ -258,6 +258,7 @@ EXTRACT_CHAR:
 
 /* Spawn 2 threads to load the file */ 
 
+/* TODO: big problem: this will choke on really small inputs */
 static inline void
 load_file (char *input_file)
 {
@@ -359,12 +360,12 @@ data_merge ()
     {
       //Don't know how big each one is so stop at 0 delimiter
       int val;
-      for (int i=1; (val = threaded_edges[tid][i]) != 0; i++)
+      for (int i=0; (val = threaded_edges[tid][i]) != 0; i++)
         {
           edges[pos] = val;
           ++pos;
         }
-      if (len_first_chunk == 0) len_first_chunk = pos;
+      if (len_first_chunk == 0) len_first_chunk = pos - 1;
     }
   pos = 0;
 
@@ -372,12 +373,13 @@ data_merge ()
   int start = 0;
   for (int tid=0;tid<2;tid++)
     {
-      for (int i=0; i<thread_data.len[tid]; i++)
+      for (int i=0; i<=thread_data.len[tid]; i++)
         {
           edges_of_node[pos] = threaded_edges_of_node[tid][pos] + start;
+          //printf ("at %d [%d] we have %d\n", pos, tid, edges_of_node[pos] );
           ++pos;
-          //printf ("at %d we have %d\n", pos, edges_of_node[pos] );
         }
+      //printf("start: %d\n", start);
       start = len_first_chunk + thread_data.num_equal_edges_at_start;
     }
 }
@@ -399,7 +401,16 @@ find_sccs (int sizes[5])
 static inline void
 debug_print_info()
 {
-  /*
+  for (int tid=0;tid<2;tid++)
+    {
+      for (int i=0;i<total_edges;i++)
+        {
+          printf("%d\n", threaded_edges[tid][i]);
+        }
+      if (tid==0) printf(" ----------thread 2 --------------\n");
+    }
+  printf("\n\n");
+
   for (int i=0;i<total_edges;i++)
     {
       printf("%d\n", edges[i]);
@@ -407,7 +418,6 @@ debug_print_info()
 
   printf ("---edge connections---\n");
 
-  */
   /*
   for (int tid=0;tid<2;tid++)
     {
@@ -423,7 +433,7 @@ debug_print_info()
 
   for (int i=0;i<total_nodes;i++)
     {
-      //printf("%d\n", edges_of_node[i]);
+      printf("%d\n", edges_of_node[i]);
       //printf("the %dth node starts at the %dth line\n", i, 3 +edges_of_node[i]);
     }
 }
@@ -438,8 +448,6 @@ main (int argc, char* argv[])
     load_file (inputFile);
 
     debug_print_info();
-
-    //return 0;
 
     find_sccs (sccSizes);
     
