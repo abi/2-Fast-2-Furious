@@ -8,30 +8,32 @@
 #include <unistd.h>
 
 #define MIN(x, y) x > y ? y : x
+#define MAX_SIZE 5000000
+#define NUM_SCCS 5
 
 //TODO: Get rid of specfic stack size
 
-int lowestIndex = 1;
-int *edges;
-int *edgesStartAt;
+int total_nodes = 0;
 
-//You've got to be kidding... Edges?! :P
-struct edgeData {
+int *edges;
+int *edges_of_node;
+
+struct node_data {
   int index;
   int lowlink;
-} *edgeData;
+} *node_data;
 
 struct frame {
   int local1;
   int local2;
-} stackframes[5000000];
+} stack_frames[MAX_SIZE];
 
-int stackposition = 0;
+int stack_position = 0;
 
 int *stack;
-bool stackcontains[5000000];
+bool stack_contains[MAX_SIZE];
 
-int bestsofar[5] = {0, 0, 0, 0, 0};
+int largest_sccs[NUM_SCCS] = {0, 0, 0, 0, 0};
 
 static inline void stack_push(int v);
 static inline int stack_pop();
@@ -40,7 +42,7 @@ static inline void
 stack_push(int v)
 {
   *stack = v;
-  stackcontains[v] = true;
+  stack_contains[v] = true;
   stack++;
 }
 
@@ -49,26 +51,26 @@ stack_pop()
 {
   stack--;
 
-  stackcontains[*stack] = false;
+  stack_contains[*stack] = false;
   return *stack;
 }
 
 static inline void
 insert_into_best(int val)
 {
-  for (int i=0;i<5;i++)
+  for (int i=0;i<NUM_SCCS;i++)
     {
-      if (val > bestsofar[i])
+      if (val > largest_sccs[i])
         {
           if (i==0)
             {
-              bestsofar[i] = val;
+              largest_sccs[i] = val;
             }
           else
             {
-              int temp = bestsofar[i];
-              bestsofar[i] = val;
-              bestsofar[i-1] = temp;
+              int temp = largest_sccs[i];
+              largest_sccs[i] = val;
+              largest_sccs[i-1] = temp;
             }
         }
       else break;
@@ -92,69 +94,57 @@ extract_num2 (char **strp, const char *delim)
   return atoi (dest_bf);
 }
 
-//#define RECURSIVE
-
-#define ITERATIVE
 static inline void
 strongconnect(int v)
 {
-#ifdef ITERATIVE
-START:
-#endif
+  static int lowest_index = 1;
 
-  edgeData[v].index = lowestIndex;
-  edgeData[v].lowlink = lowestIndex;
-  lowestIndex++;
+START:
+
+  node_data[v].index = lowest_index;
+  node_data[v].lowlink = lowest_index;
+  lowest_index++;
   stack_push(v);
 
   int w;
 
-  for (int pos = edgesStartAt[v  ];
-           pos < edgesStartAt[v+1];
+  for (int pos = edges_of_node[v  ];
+           pos < edges_of_node[v+1];
            pos++)
     {
       w = edges[pos];
-      //printf("%d is adj to %d.\n", v, w);
 
-      if (edgeData[w].index == 0)
+      if (node_data[w].index == 0)
         {
-          //strongconnect(w);
-#ifdef ITERATIVE
-          stackframes[stackposition].local1 = v;
-          stackframes[stackposition].local2 = pos;
+          stack_frames[stack_position].local1 = v;
+          stack_frames[stack_position].local2 = pos;
 
-          v = w; //call with (w)
+          v = w; //call this function with (w)
 
-          stackposition++;
-          goto START; //HACKY HACKY HACKY HACKY HACKY
-#endif
+          stack_position++;
+          goto START; 
 
-#ifdef RECURSIVE
-          strongconnect(w);
-#endif 
-
-#ifdef ITERATIVE
 RETURN:
-          stackposition--;
-          if (stackposition == -1) {
-            stackposition = 0;
-            return;
-          }
+          stack_position--;
+          if (stack_position == -1) 
+            {
+              stack_position = 0;
+              return;
+            }
 
-          v =   stackframes[stackposition].local1;
-          pos = stackframes[stackposition].local2;
+          v =   stack_frames[stack_position].local1;
+          pos = stack_frames[stack_position].local2;
           w = edges[pos];
-#endif
 
-          edgeData[v].lowlink = MIN(edgeData[v].lowlink, edgeData[w].lowlink);
+          node_data[v].lowlink = MIN(node_data[v].lowlink, node_data[w].lowlink);
         }
-      else if (stackcontains[w])
+      else if (stack_contains[w])
         {
-          edgeData[v].lowlink = MIN(edgeData[v].lowlink, edgeData[w].index);
+          node_data[v].lowlink = MIN(node_data[v].lowlink, node_data[w].index);
         }
     }
 
-  if (edgeData[v].lowlink == edgeData[v].index)
+  if (node_data[v].lowlink == node_data[v].index)
   {
     int count = 1;
     while (stack_pop() != v)
@@ -165,102 +155,93 @@ RETURN:
     insert_into_best(count);
   }
 
-#ifdef ITERATIVE
   goto RETURN;
-#endif
 }
 
 static inline void
-findSccs (char *input_file, int sizes[5])
+loadFile (char *input_file)
 {
-	struct stat statbuf;
-	
-	int fd = open (input_file, O_RDONLY);
-	fstat (fd, &statbuf);
-	
-	char *buf = malloc (statbuf.st_size);
-	char *start_ptr = buf;
-	
-	//printf ("Buffer size: %d\n", statbuf.st_size);
-	read (fd, buf, statbuf.st_size);
-	
-  int totalnodes, totaledges; //TODO: Change to n, m
-	//printf ("Buffer ptr: %p\n", buf);
-	totalnodes = extract_num2 (&buf, "\n");
-	//printf ("Buffer ptr: %p\n", buf);
-  totaledges = extract_num2 (&buf, "\n");
-	//printf ("Number of nodes: %d \n", totalnodes);
-  //printf ("Number of edges: %d \n", totaledges);
-	//printf ("Bytes read: %d in buffer ptr %c\n", buf - start_ptr, *buf);
+  struct stat statbuf;
   
-	int buf_size = statbuf.st_size - (buf - start_ptr);
-	
-  edges = malloc (sizeof(int) * totaledges);
-  edgesStartAt = malloc (sizeof(int) * (totalnodes + 1));
-  edgeData = calloc (sizeof(edgeData) * totalnodes, 1); //Initialize to 0.
-  stack = malloc (sizeof(int) * (totalnodes));
+  int fd = open (input_file, O_RDONLY);
+  fstat (fd, &statbuf);
+  
+  char *buf = malloc (statbuf.st_size);
+  char *start_ptr = buf;
+  
+  //printf ("Buffer size: %d\n", statbuf.st_size);
+  read (fd, buf, statbuf.st_size);
+  
+  int total_edges; //TODO: Change to n, m
+  total_nodes = extract_num2 (&buf, "\n");
+  total_edges = extract_num2 (&buf, "\n");
+  
+  int buf_size = statbuf.st_size - (buf - start_ptr);
+  
+  edges = malloc (sizeof(int) * total_edges);
+  edges_of_node = malloc (sizeof(int) * (total_nodes + 1));
+  node_data = calloc (sizeof(node_data) * total_nodes, 1); //Initialize to 0.
+  stack = malloc (sizeof(int) * (total_nodes));
   
   int start, end, i;
-	register int digit, num;
+  register int digit, num;
   int laststart = 0, nodes = 1, j = 0, k = 0;
 
-  for (i = 0; i < totaledges; i++)
+  for (i = 0; i < total_edges; i++)
     {
-			k = 0;
-			num = 0;
-			
-			//Clean up this mess
-			while (k < 2)
-				{
+      k = 0;
+      num = 0;
+
+      //extract 2 numbers
+      while (k < 2)
+        {
 EXTRACT_CHAR:
-						digit = (int) buf[j];
-						//printf ("%d\n", digit);
-						
-						if (digit != 32)
-							{
-								num = num * 10 + (digit - 48);
-								j++;
-								goto EXTRACT_CHAR;
-							}cd
-						else
-							{
-									if (k != 0) break;
-									start = num;
-									j++;
-									num = 0;
-							}
-					k++;
-				}
-				
-			end = num;
-			j += 2;
-				
-			//printf ("%d to %d\n", start, end);
-      
-			if (start != laststart)
+            digit = (int) buf[j];
+            
+            if (digit != 32)
+              {
+                num = num * 10 + (digit - 48);
+                j++;
+                goto EXTRACT_CHAR;
+              }
+            else
+              {
+                  if (k != 0) break;
+                  start = num;
+                  j++;
+                  num = 0;
+              }
+          k++;
+        }
+        
+      end = num;
+      j += 2;
+
+      if (start != laststart)
         {
           for (int k=laststart+1;k<start;k++)
-            edgesStartAt[k] = i;
+            edges_of_node[k] = i;
 
-          //printf("%d is now %d\n", start, i); 
-          edgesStartAt[start] = i;
-          //nodes++;
+          edges_of_node[start] = i;
         }
       edges[i] = end;
       laststart = start;
     }
 
-	//What is this?
-  for (int k=laststart+1;k<=totalnodes+1;k++)
-    edgesStartAt[k] = i;
+  for (int k=laststart+1;k<=total_nodes+1;k++)
+    edges_of_node[k] = i;
 
- /*
-  * The data for node i starts at edges[edgesStartAt[i]] and ends at
-  * edges[edgesStartAt[i+1]].
-  */
-  for (int i=1;i<=totalnodes;i++)
+}
+
+static inline void
+findSccs (int sizes[5])
+{
+  //The data for node i starts at edges[edges_of_node[i]]
+  //and ends at edges[edges_of_node[i+1]].
+  
+  for (int i=1;i<=total_nodes;i++)
   {
-    if (edgeData[i].index == 0)
+    if (node_data[i].index == 0)
     {
       strongconnect (i);
     }
@@ -274,13 +255,15 @@ main(int argc, char* argv[])
     char* inputFile = argv[1];
     char* outputFile = argv[2];
     
-    findSccs (inputFile, sccSizes);
+    loadFile (inputFile);
+
+    findSccs (sccSizes);
     
     for (int i=4;i>=1;i--)
     {
-      printf("%d\t", bestsofar[i]);
+      printf("%d\t", largest_sccs[i]);
     }
-      printf("%d", bestsofar[0]); //TODO: are we supposed to have a newline?
+      printf("%d", largest_sccs[0]); //TODO: are we supposed to have a newline?
     return 0;
 
     // Output the first 5 sccs into a file.
