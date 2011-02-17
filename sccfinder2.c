@@ -45,7 +45,7 @@ stack_pop()
   return *stack;
 }
 
-void
+static inline void
 insert_into_best(int val)
 {
   for (int i=0;i<5;i++)
@@ -70,7 +70,7 @@ insert_into_best(int val)
 //#define RECURSIVE
 
 #define ITERATIVE
-void
+static inline void
 strongconnect(int v)
 {
 #ifdef ITERATIVE
@@ -145,16 +145,24 @@ RETURN:
 #endif
 }
 
-void findSccs (char *input, int sizes[5])
+static inline void
+findSccs (char *input, int sizes[5])
 {
-  freopen(input, "r", stdin);
+	FILE *file = fopen (input, "r");
+  //freopen(input, "r", stdin);
   int totalnodes, totaledges;
-  scanf("%d\n%d\n", &totalnodes, &totaledges);
 
-  edges = malloc(sizeof(int) * totaledges);
-  edgesStartAt = malloc(sizeof(int) * (totalnodes + 1));
-  edgeData = calloc(sizeof(edgeData) * totalnodes, 1); //Initialize to 0.
-  stack = malloc(sizeof(int) * (totalnodes));
+	//Let's try the setbuf trick
+	//Arbitary large number/file size thist time
+	char *buffer = malloc (6444768); 
+	setbuf (file, buffer);
+
+ 	fscanf (file, "%d\n%d\n", &totalnodes, &totaledges);
+
+  edges = malloc (sizeof(int) * totaledges);
+  edgesStartAt = malloc (sizeof(int) * (totalnodes + 1));
+  edgeData = calloc (sizeof(edgeData) * totalnodes, 1); //Initialize to 0.
+  stack = malloc (sizeof(int) * (totalnodes));
   
   int start, end;
   int laststart = 0, nodes = 1;
@@ -162,8 +170,10 @@ void findSccs (char *input, int sizes[5])
 
   for (i=0;i<totaledges;i++)
     {
-      scanf("%d\n%d\n", &start, &end);
-      if (start != laststart)
+			fscanf (file, "%d\n%d\n", &start, &end);
+		 	//scanf("%d\n%d\n", &start, &end);
+      
+			if (start != laststart)
         {
           for (int k=laststart+1;k<start;k++)
             edgesStartAt[k] = i;

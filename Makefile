@@ -18,17 +18,27 @@ endif
 random: randomgraph.cpp
 	$(CPP) $(CFLAGS) -o random randomgraph.cpp
 
+boostscc: boostscc.cpp
+	$(CPP) $(CFLAGS) -o boost boostscc.cpp
+
 sccfinder: sccfinder.c
 	$(CC) $(CFLAGS) -o sccfinder sccfinder.c
 
-grant: sccfinder2.c
-	$(CC) $(CFLAGS) -O3 -g -o sccfinder2 sccfinder2.c
+threads: threads.c
+	$(CC) $(CFLAGS) -o threads threads.c
+
+sccfinder2: sccfinder2.c
+	$(CC) $(CFLAGS) -g -o sccfinder2 sccfinder2.c
+
+scc: scc.c
+	$(CC) $(CFLAGS) -g -o scc scc.c
 
 opt: sccfinder.c
-	$(CC) $(CFLAGS) -O3 -o sccfinder sccfinder.c
+	$(CC) $(CFLAGS) -O3 -o scc scc.c
 
 debug: sccfinder.c
 	$(CC) $(CFLAGS) -g -o sccfinder sccfinder.c
 
 clean:
-	rm -f sccfinder random *.o *.out *.output
+	rm -rf sccfinder random *.o *.out *.output sccfinder2
+	rm -rf sccfinder2.dSYM scc scc.dSYM dual-core bench-string bench-utils
