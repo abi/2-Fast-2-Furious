@@ -221,7 +221,7 @@ EXTRACT_CHAR:
 								num = num * 10 + (digit - 48);
 								j++;
 								goto EXTRACT_CHAR;
-							}
+							}cd
 						else
 							{
 									if (k != 0) break;
