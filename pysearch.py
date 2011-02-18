@@ -17,7 +17,6 @@ MANY_SCC   = 1
 
 results = ""
 
-print "why cdoes god hate me"
 for nodeamount in nodeamts:
   step = 1
   trials = 40
