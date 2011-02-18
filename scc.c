@@ -354,22 +354,14 @@ main (int argc, char* argv[])
 
     findSccs (sccSizes);
     
+    freopen (outputFile, "w", stdout); 
+
     for (int i=4;i>=1;i--)
     {
       printf ("%d\t", largest_sccs[i]);
     }
-      printf ("%d", largest_sccs[0]); //TODO: are we supposed to have a newline?
-    return 0;
+      printf ("%d", largest_sccs[0]); 
 
-    // Output the first 5 sccs into a file.
-    // int fd = creat (outputFile);
-    //    //TODO: This is really bad, probably have to use strcat
-    //    char output[11] = {(char) sccSizes[0], '\t', (char) sccSizes[1], '\t',
-    //                       (char) sccSizes[2], '\t', (char) sccSizes[3], '\t',
-    //                       (char) sccSizes[4], '\n', '\0'};
-    //    write (fd, output, sizeof (output));
-    //    close (fd);
-    
     return 0;
 }
 
