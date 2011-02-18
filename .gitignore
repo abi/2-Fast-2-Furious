@@ -13,3 +13,6 @@ scc.d*
 a
 b
 tinybig
+callgrind.out.*
+*.swo
+*.swp

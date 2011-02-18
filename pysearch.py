@@ -12,6 +12,7 @@ nodeamts = [ 10 ** 2
            , 10 ** 5 * 5
            ]
 
+nodeamts = nodeamts[4:]
 SINGLE_SCC = 0
 MANY_SCC   = 1
 
@@ -20,7 +21,7 @@ results = ""
 for nodeamount in nodeamts:
   step = 1
   trials = 40
-  percent_goal = .1
+  percent_goal = .9
   guess = 1
 
   step_going_up = True
@@ -38,7 +39,7 @@ for nodeamount in nodeamts:
       subprocess.call(["./random", str(nodeamount), str(guess), name,
         str(random.uniform(1, 1000000))])
 
-      if subprocess.call(["./sccfinder2", name]) == SINGLE_SCC:
+      if subprocess.call(["./scc", name]) == SINGLE_SCC:
         times += 1
 
       subprocess.call(["rm", name])

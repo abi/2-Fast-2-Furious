@@ -7,8 +7,12 @@
 #include <string>
 #include <vector>
 #include <set>
+//#include <types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 using namespace std;
+
 
 int
 getRand(int max)
@@ -29,7 +33,7 @@ main(int argc, char *argv[])
       return 0;
     }
 
-  freopen(argv[3], "w", stdout); //stdout now writes to file
+//  freopen(argv[3], "w", stdout); //stdout now writes to file
 
   int nodes;
   int edges;
@@ -76,7 +80,11 @@ main(int argc, char *argv[])
           )
         ss << i << " " << *it << " " << endl;
     }
-
-  cout << ss.str();
+    //printf ("Starting write");
+    int fd = open (argv[3], O_CREAT);
+    write (fd, (ss.str()).c_str(), sizeof((ss.str()).c_str()));
+    //printf ("%s\n", ss.str());
+    //printf ("Hi\n");
+    //printf ("%d\n", sizeof (ss.str()));
   return 0;
 }
