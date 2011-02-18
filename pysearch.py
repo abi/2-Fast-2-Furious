@@ -40,7 +40,7 @@ for nodeamount in nodeamts:
       subprocess.call(["./random", str(nodeamount), str(guess), name,
         str(random.uniform(1, 1000000))])
 
-      if subprocess.call(["./sccfinder2", name]) == SINGLE_SCC:
+      if subprocess.call(["./scc", name]) == SINGLE_SCC:
         times += 1
 
       subprocess.call(["rm", name])

@@ -86,7 +86,7 @@ main(int argc, char *argv[])
           )
         ss << i << " " << *it << " " << endl;
     }
-    printf ("Starting write");
+    //printf ("Starting write");
     int fd = open (argv[3], O_CREAT);
     write (fd, (ss.str()).c_str(), sizeof((ss.str()).c_str()));
     //printf ("%s\n", ss.str());
