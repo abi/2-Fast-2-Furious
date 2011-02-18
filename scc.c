@@ -217,11 +217,36 @@ void *
 thread (int tid)
 {
   int start, end, i = 0;
-  int laststart = -1, nodes = 1, j = 0, k = 0;
+  int laststart = -1, nodes = 1, j = 0;
 
-  while (thread_data.thread_start[tid] < thread_data.thread_end[tid])
+  while (&thread_data.thread_start[tid][j] < thread_data.thread_end[tid])
     {
-      read2 (&thread_data.thread_start[tid], &start, &end); //TODO manually inline
+      int k = 0;
+      int num = 0;
+      int digit = 0;
+
+      //extract 2 numbers
+      while (k < 2)
+        {
+    EXTRACT_CHAR:
+          if (thread_data.thread_start[tid][j]!= 32)
+            {
+              num = num * 10 + (thread_data.thread_start[tid][j]- 48);
+              j++;
+              goto EXTRACT_CHAR;
+            }
+          else
+            {
+              if (k != 0) break;
+              j++;
+              start = num;
+              num = 0;
+            }
+          k++;
+        }
+        
+      end = num;
+      j += 2;
 
       if (tid == 1 && laststart == -1)
         {
