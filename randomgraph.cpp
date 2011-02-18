@@ -66,12 +66,6 @@ main(int argc, char *argv[])
   stringstream ss;
 
   ss << nodes << endl << edges << endl;
-  /*
-  res += nodes;
-  res += "\n";
-  res += edges;
-  res += "\n";
-  */
 
   for (i=0;i<adjList.size();i++)
     {
