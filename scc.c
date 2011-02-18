@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -22,9 +23,10 @@
 int total_nodes = 0;
 int total_edges = 0;
 
-int *edges;
-void **edges_of_node;
+char *inputFile;
+char *outputFile;
 
+int *edges;
 int *threaded_edges[2];
 
 struct thread_data {
@@ -51,7 +53,7 @@ int stack_position = 0;
 int *stack;
 bool stack_contains[MAX_SIZE];
 
-int largest_sccs[NUM_SCCS] = {0, 0, 0, 0, 0};
+int largest_sccs[NUM_SCCS] = {0};
 
 static inline void stack_push (int v);
 static inline int stack_pop ();
@@ -271,19 +273,6 @@ loadFile (char *input_file)
 
   //Force threads to use both cores
 
-  /*
-  cpu_set_t    cpuset1; 
-  CPU_ZERO   (&cpuset1);
-  CPU_SET (0, &cpuset1);
-
-  cpu_set_t    cpuset2;
-  CPU_ZERO   (&cpuset2);
-  CPU_SET (1, &cpuset2);
-
-  pthread_setaffinity_np (thr1, sizeof (cpu_set_t), &cpuset1);
-  pthread_setaffinity_np (thr2, sizeof (cpu_set_t), &cpuset2);
-  */
-
   thread_data.thread_start[0] = buf;
   thread_data.thread_start[1] = buf + buf_size / 2;
   thread_data.thread_end  [0] = buf + buf_size / 2;
@@ -331,9 +320,6 @@ loadFile (char *input_file)
 static inline void
 findSccs (int sizes[5])
 {
-  //The data for node i starts at edges[edges_of_node[i]]
-  //and ends at edges[edges_of_node[i+1]].
-  
   for (int i=1;i<=total_nodes;i++)
   {
     if (node_data[i].index == 0)
@@ -342,23 +328,95 @@ findSccs (int sizes[5])
     }
   }
 }
+static inline void
+loadFileAfterSegfault (char *input_file)
+{
+  freopen (input_file, "r", stdin);
+
+  scanf ("%d\n%d\n", &total_nodes, &total_edges);
+
+  stack_position = 0;
+
+  for (int i=0;i<total_nodes;i++)
+    {
+      stack_frames[i].local1 = 0;
+      stack_frames[i].local2 = 0;
+    }
+
+  edges = calloc (sizeof (int) * (total_edges), 1);
+  node_data = calloc (sizeof (struct node_data_str) * (total_nodes + 1), 1); //Initialize to 0.
+  stack = calloc (sizeof (int) * (total_nodes), 1);
+
+  int start, end, i;
+  int laststart = -1, nodes = 1, j = 0, k = 0;
+
+  for (i = 0; i < total_edges; i++)
+    {
+      scanf("%d %d ", &start, &end);
+
+      for (int k=laststart+1;k<=start;k++) 
+        {
+          node_data[k].edges = &edges[i];
+        }
+
+      node_data[start].num_edges++;
+      edges[i] = end;
+      laststart = start;
+    }
+
+  for (int k=laststart+1;k<=total_nodes+1;k++)
+    node_data[k].edges = &edges[i];
+}
+
+
+void segfault_handler(int u)
+{
+  printf("Greetings!\n\n");
+  printf("You are seeing this message because your input was not of the correct format.\n");
+  printf("Maybe there was an extra space, or not enough spaces, or something else like that.\n");
+
+  printf("\n\n");
+
+  printf("We expect the format to be as provided by the samples. That is:\n\nnodes\nedges\nstart end \n");
+  printf("It's important that there's a space after both start and end!\n");
+  printf("This makes us really sad, because we now have to revert to a slower version. Here goes:\n");
+
+
+
+  int sccSizes[5];
+
+  loadFileAfterSegfault (inputFile);
+
+  findSccs (sccSizes);
+
+  for (int i=NUM_SCCS-1;i>=1;i--)
+    {
+      printf ("%d\t", largest_sccs[i]);
+    }
+  printf ("%d", largest_sccs[0]);
+
+  exit(0);
+}
 
 int
 main (int argc, char* argv[])
 {
+    signal (SIGSEGV, segfault_handler);
+
     int sccSizes[5];
-    char* inputFile = argv[1];
-    char* outputFile = argv[2];
+    inputFile = argv[1];
+    outputFile = argv[2];
     
     loadFile (inputFile);
 
     findSccs (sccSizes);
     
-    for (int i=4;i>=1;i--)
-    {
-      printf ("%d\t", largest_sccs[i]);
-    }
-      printf ("%d", largest_sccs[0]); //TODO: are we supposed to have a newline?
+    for (int i=NUM_SCCS-1;i>=1;i--)
+      {
+        printf ("%d\t", largest_sccs[i]);
+      }
+
+    printf ("%d", largest_sccs[0]); //TODO: are we supposed to have a newline?
     return 0;
 
     // Output the first 5 sccs into a file.
