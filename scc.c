@@ -375,9 +375,13 @@ loadFileAfterSegfault (char *input_file)
   int start, end, i;
   int laststart = -1, nodes = 1, j = 0, k = 0;
 
+  int firststart = -1;
+
   for (i = 0; i < total_edges; i++)
     {
       scanf("%d %d ", &start, &end);
+
+      if (firststart == -1) firststart = start;
 
       for (int k=laststart+1;k<=start;k++) 
         {
@@ -389,6 +393,11 @@ loadFileAfterSegfault (char *input_file)
       laststart = start;
     }
 
+  if (laststart == firststart)
+  {
+    printf("0\t0\t0\t0\t0");
+    exit(0);
+  }
   for (int k=laststart+1;k<=total_nodes+1;k++)
     node_data[k].edges = &edges[i];
 }
