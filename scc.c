@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -7,6 +9,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <pthread.h>
+
 #define MIN(x, y) x > y ? y : x
 #define MAX_SIZE 5000000
 #define NUM_SCCS 5
@@ -14,11 +18,12 @@
 //TODO: Get rid of specfic stack size
 
 int total_nodes = 0;
+int total_edges = 0;
 
 int *edges;
 void **edges_of_node;
 
-void *threaded_edges[2];
+int *threaded_edges[2];
 
 struct thread_data {
   char *thread_start[2];
@@ -201,7 +206,36 @@ EXTRACT_CHAR:
     }
     
   *end = num;
-  *buf+=2;
+  *buf += 2;
+}
+
+void *
+thread (int tid)
+{
+  int start, end, i = 0;
+  int laststart = -1, nodes = 1, j = 0, k = 0;
+
+  while (thread_data.thread_start[tid] < thread_data.thread_end[tid])
+    {
+      read2 (&thread_data.thread_start[tid], &start, &end); //TODO manually inline
+
+      if (tid == 1 && laststart == -1)
+        {
+          laststart = start - 1; //TODO: is this safe?
+        }
+
+      for (int k=laststart+1;k<=start;k++) 
+        {
+          node_data[k].edges = &threaded_edges[tid][i];
+        }
+
+      node_data[start].num_edges++;
+      threaded_edges[tid][i] = end;
+      laststart = start;
+      ++i;
+    }
+
+  return NULL;
 }
 
 static inline void
@@ -218,7 +252,6 @@ loadFile (char *input_file)
   //printf ("Buffer size: %d\n", statbuf.st_size);
   read (fd, buf, statbuf.st_size);
 
-  int total_edges; //TODO: Change to n, m
   total_nodes = extract_num2 (&buf, "\n");
   total_edges = extract_num2 (&buf, "\n");
 
@@ -228,7 +261,6 @@ loadFile (char *input_file)
   node_data = calloc (sizeof (struct node_data_str) * (total_nodes + 1), 1); //Initialize to 0.
   stack = malloc (sizeof (int) * (total_nodes));
 
-  /*
   threaded_edges[0] = calloc (sizeof (int) * total_edges, 1);
   threaded_edges[1] = calloc (sizeof (int) * total_edges, 1);
 
@@ -237,6 +269,7 @@ loadFile (char *input_file)
 
   //Force threads to use both cores
 
+  /*
   cpu_set_t    cpuset1; 
   CPU_ZERO   (&cpuset1);
   CPU_SET (0, &cpuset1);
@@ -247,6 +280,7 @@ loadFile (char *input_file)
 
   pthread_setaffinity_np (thr1, sizeof (cpu_set_t), &cpuset1);
   pthread_setaffinity_np (thr2, sizeof (cpu_set_t), &cpuset2);
+  */
 
   thread_data.thread_start[0] = buf;
   thread_data.thread_start[1] = buf + buf_size / 2;
@@ -262,13 +296,18 @@ loadFile (char *input_file)
 
   //now seek forward
   int initialstart, start = -1, end = -1;
+  void *oldpos;
   read2(&thread_data.thread_start[1], &start, &end);
-  initialstart = start
+  initialstart = start;
 
   //until we find a good division point
   while(start == initialstart)
-    read2(&thread_data.thread_start[1], &start, &end);
+    {
+      oldpos = thread_data.thread_start[1];
+      read2(&thread_data.thread_start[1], &start, &end);
+    }
 
+  thread_data.thread_start[1] = oldpos;
 
   thread_data.thread_end[0] = thread_data.thread_start[1];
 
@@ -281,35 +320,36 @@ loadFile (char *input_file)
   pthread_join (thr1, NULL);
   pthread_join (thr2, NULL);
 
-  data_merge()
-
-  */
-
-  int start, end, i;
-  int laststart = -1, nodes = 1, j = 0, k = 0;
-
-  for (i = 0; i < total_edges; i++)
-    {
-      read2 (&buf, &start, &end); //TODO manually inline
-
-      for (int k=laststart+1;k<=start;k++) 
-        {
-          node_data[k].edges = &edges[i];
-        }
-
-      node_data[start].num_edges++;
-      edges[i] = end;
-      laststart = start;
-    }
-
-  for (int k=laststart+1;k<=total_nodes+1;k++)
-    node_data[k].edges = &edges[i];
+  data_merge();
 }
 
-static inline void
+inline void
 data_merge ()
 {
+  //TODO memcpy
+  int pos = 0;
 
+  for (int tid=0;tid<2;tid++)
+    {
+      for(int i=0; threaded_edges[tid][i] != 0; i++, pos++)
+        {
+          edges[pos] = threaded_edges[tid][i];
+        }
+    }
+
+  /*
+  for (int i=0;i<pos;i++)
+  {
+    printf("%d\n", edges[i]);
+  }
+
+  printf("-------\n");
+
+  for (int i=0;i<=total_nodes;i++)
+  {
+    printf("%d\n", ((int)node_data[i].edges - (int)edges)/sizeof(int));
+  }
+  */
 }
 
 static inline void
@@ -325,12 +365,6 @@ findSccs (int sizes[5])
       strongconnect (i);
     }
   }
-}
-
-static void *
-thread (int threadid)
-{
-
 }
 
 /*
