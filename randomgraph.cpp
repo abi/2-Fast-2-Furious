@@ -23,17 +23,25 @@ getRand(int max)
 int
 main(int argc, char *argv[])
 {
-  int rseed;
-  sscanf (argv[4], "%d", &rseed);
-  srand (rseed);
 
-  if (argc != 5)
+  if (argc != 5 && argc != 4)
     {
-      cout << "Usage: ./random nodecount edgecount filename randomseed" << endl;
+      cout << "Usage: ./random nodecount edgecount filename [randomseed]" << endl;
       return 0;
     }
 
-//  freopen(argv[3], "w", stdout); //stdout now writes to file
+  int rseed; //Explaination in PDF
+  if (argc == 4)
+  {
+    rseed = time (NULL);
+  } 
+  else 
+  {
+    sscanf (argv[4], "%d", &rseed);
+    srand (rseed);
+  }
+
+  freopen(argv[3], "w", stdout); //stdout now writes to file
 
   int nodes;
   int edges;
@@ -81,8 +89,8 @@ main(int argc, char *argv[])
         ss << i << " " << *it << " " << endl;
     }
     //printf ("Starting write");
-    int fd = open (argv[3], O_CREAT);
-    write (fd, (ss.str()).c_str(), sizeof((ss.str()).c_str()));
+    cout << ss.str();
+
     //printf ("%s\n", ss.str());
     //printf ("Hi\n");
     //printf ("%d\n", sizeof (ss.str()));
