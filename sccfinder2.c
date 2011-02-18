@@ -89,7 +89,6 @@ START:
            pos++)
     {
       w = edges[pos];
-      //printf("%d is adj to %d.\n", v, w);
 
       if (edgeData[w].index == 0)
         {
@@ -217,8 +216,12 @@ main(int argc, char* argv[])
     
     for (int i=4;i>=0;i--)
     {
-      printf("%d\t", bestsofar[i]);
+      fprintf(stderr, "%d\t", bestsofar[i]);
     }
+    if (bestsofar[3] == 0)
+      return 0;
+
+    return 1;
     return 0;
 
     // Output the first 5 sccs into a file.
