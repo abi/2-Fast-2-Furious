@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <algorithm>
+#include <string>
 #include <vector>
+#include <set>
 
 using namespace std;
 
@@ -17,11 +19,13 @@ getRand(int max)
 int
 main(int argc, char *argv[])
 {
-  srand (time (NULL));
+  int rseed;
+  sscanf (argv[4], "%d", &rseed);
+  srand (rseed);
 
-  if (argc != 4)
+  if (argc != 5)
     {
-      cout << "Usage: ./random nodecount edgecount filename" << endl;
+      cout << "Usage: ./random nodecount edgecount filename randomseed" << endl;
       return 0;
     }
 
@@ -32,7 +36,7 @@ main(int argc, char *argv[])
   sscanf (argv[1], "%d", &nodes);
   sscanf (argv[2], "%d", &edges);
 
-  vector<vector<int> > adjList (nodes + 1, vector<int> (0));
+  vector<set<int> > adjList (nodes + 1, set<int> ());
 
   int i=0;
 
@@ -51,20 +55,34 @@ main(int argc, char *argv[])
 
     if (start==end) continue; //no self loops
 
-    if (find (adjList[start].begin(),
-             adjList[start].end(), end) == adjList[start].end())
+    if (adjList[start].find(end) == adjList[start].end())
     {
-      adjList[start].push_back(end);
+      adjList[start].insert(end);
       ++i;
     }
   }
-		
 
-  cout << nodes << endl << edges << endl;
+
+  stringstream ss;
+
+  ss << nodes << endl << edges << endl;
+  /*
+  res += nodes;
+  res += "\n";
+  res += edges;
+  res += "\n";
+  */
 
   for (i=0;i<adjList.size();i++)
-    for (int j=0;j<adjList[i].size();j++)
-      cout << i << " " << adjList[i][j] << " " << endl;
+    {
+      set<int>::iterator it;
+      for (it  = adjList[i].begin();
+           it != adjList[i].end  ();
+           it++
+          )
+        ss << i << " " << *it << " " << endl;
+    }
 
+  cout << ss.str();
   return 0;
 }
