@@ -12,6 +12,7 @@ nodeamts = [ 10 ** 2
            , 10 ** 5 * 5
            ]
 
+nodeamts = nodeamts[4:]
 SINGLE_SCC = 0
 MANY_SCC   = 1
 
@@ -21,7 +22,7 @@ print "why cdoes god hate me"
 for nodeamount in nodeamts:
   step = 1
   trials = 40
-  percent_goal = .1
+  percent_goal = .9
   guess = 1
 
   step_going_up = True
