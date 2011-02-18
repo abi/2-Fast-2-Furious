@@ -9,8 +9,8 @@
 long long v;
 long long w;
 
-//#define THREADED
-#define NOT
+#define THREADED
+//#define NOT
 
 #define BIGGG 100000000
 void
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   pthread_t thr1, thr2;
 
   pthread_setaffinity_np(thr1, sizeof(cpu_set_t), &cpuset);
-  pthread_setaffinity_np(thr1, sizeof(cpu_set_t), &cpuset1);
+  pthread_setaffinity_np(thr2, sizeof(cpu_set_t), &cpuset1);
 
 
   if (pthread_create(&thr1, NULL, &thread, NULL))
@@ -69,4 +69,3 @@ int main(int argc, char **argv)
   printf("%Ld\n", w); 
   return 0;
 }
-

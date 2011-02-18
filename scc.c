@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <sched.h>
+
 #include <pthread.h>
 
 #define MIN(x, y) x > y ? y : x
@@ -317,39 +319,13 @@ loadFile (char *input_file)
   pthread_create (&thr1, NULL, &thread, 0);
   pthread_create (&thr2, NULL, &thread, 1);
 
+  /*
+  pthread_setaffinity_np (thr1, sizeof (cpu_set_t), &cpuset1);
+  pthread_setaffinity_np (thr2, sizeof (cpu_set_t), &cpuset2);
+  */
+
   pthread_join (thr1, NULL);
   pthread_join (thr2, NULL);
-
-  data_merge();
-}
-
-inline void
-data_merge ()
-{
-  //TODO memcpy
-  int pos = 0;
-
-  for (int tid=0;tid<2;tid++)
-    {
-      for(int i=0; threaded_edges[tid][i] != 0; i++, pos++)
-        {
-          edges[pos] = threaded_edges[tid][i];
-        }
-    }
-
-  /*
-  for (int i=0;i<pos;i++)
-  {
-    printf("%d\n", edges[i]);
-  }
-
-  printf("-------\n");
-
-  for (int i=0;i<=total_nodes;i++)
-  {
-    printf("%d\n", ((int)node_data[i].edges - (int)edges)/sizeof(int));
-  }
-  */
 }
 
 static inline void
@@ -366,105 +342,6 @@ findSccs (int sizes[5])
     }
   }
 }
-
-/*
-static inline void
-load_file (char *input_file)
-{
-  struct stat statbuf;
-
-  int fd = open (input_file, O_RDONLY);
-  fstat (fd, &statbuf);
-
-  char *buf = malloc (statbuf.st_size);
-  char *start_ptr = buf;
-
-  read (fd, buf, statbuf.st_size);
-
-  total_nodes = extract_num2 (&buf, "\n");
-  total_edges = extract_num2 (&buf, "\n");
-
-  //
-  // TODO TODO TODO TODO TODO
-  //
-  //
-  // if (total_nodes < 20)
-  //   {
-  //     use_unthreaded_code()
-  //   }
-  //
-  ///
-
-  int buf_size = statbuf.st_size - (buf - start_ptr);
-
-  //Over allocating here (not that it really matters).
-
-  //TODO: calloc is for dbg only, set to malloc later.
-  //
-  //The size should be something approximately like
-  //sizeof (int) * (total_edges / 2 + 1)
-  threaded_edges[0] = calloc (sizeof (int) * (total_edges + 50), 1);
-  threaded_edges[1] = calloc (sizeof (int) * (total_edges + 50), 1);
-  threaded_edges_of_node[0] = calloc (sizeof (int) * (total_nodes + 1), 1);
-  threaded_edges_of_node[1] = calloc (sizeof (int) * (total_nodes + 1), 1);
-
-  edges = calloc(sizeof(int) * total_edges, 1);
-  edges_of_node = calloc(sizeof(int) * total_edges, 1);
-
-  node_data = calloc (sizeof (node_data) * total_nodes, 1); //Initialize to 0.
-  stack = malloc (sizeof (int) * (total_nodes));
-
-  pthread_t thr1, thr2;
-
-  //Force threads to use both cores
-
-  cpu_set_t    cpuset1; 
-  CPU_ZERO   (&cpuset1);
-  CPU_SET (0, &cpuset1);
-
-  cpu_set_t    cpuset2;
-  CPU_ZERO   (&cpuset2);
-  CPU_SET (1, &cpuset2);
-
-  pthread_setaffinity_np (thr1, sizeof (cpu_set_t), &cpuset1);
-  pthread_setaffinity_np (thr2, sizeof (cpu_set_t), &cpuset2);
-
-  thread_data.thread_start[0] = buf;
-  thread_data.thread_start[1] = buf + buf_size / 2;
-  thread_data.thread_end  [0] = buf + buf_size / 2;
-  thread_data.thread_end  [1] = buf + buf_size;
-
-  //seek back until you find a '\n'
-  while (*(--thread_data.thread_start[1]) != '\n')
-    ;
-
-  //but don't actually include it
-  thread_data.thread_start[1]++;
-
-  //now seek forward
-  int initialstart, start = -1, end = -1;
-  read2(&thread_data.thread_start[1], &start, &end);
-  initialstart = start
-
-  //until we find a good division point
-  while(start == initialstart)
-    read2(&thread_data.thread_start[1], &start, &end);
-
-
-  thread_data.thread_end[0] = thread_data.thread_start[1];
-
-  //TODO: Maybe we should have some sort of backup plan?
-  //This will fail if we can't spawn threads.
-
-  pthread_create (&thr1, NULL, &thread, 0);
-  pthread_create (&thr2, NULL, &thread, 1);
-
-  pthread_join (thr1, NULL);
-  pthread_join (thr2, NULL);
-
-  data_merge();
-}
-*/
 
 int
 main (int argc, char* argv[])
